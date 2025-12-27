@@ -5,15 +5,21 @@ const SINGULAR_SELECTION : bool = false
 const TITLE_BASE : String = "Make Folders in: \n\t"
 
 var dialog: AcceptDialog
+var file_dialog : FileDialog
 var text_edit : TextEdit
 
 var make_folder_shortcut : Shortcut = Shortcut.new()
 var submit_shortcut : Shortcut = Shortcut.new()
 
+var base_path : String
+
+
 func _enter_tree() -> void:
+	base_path = OS.get_user_data_dir().path_join("mkfolders/templates")
+	if not DirAccess.dir_exists_absolute(base_path):
+		DirAccess.make_dir_recursive_absolute(base_path)
 
-
-
+	base_path = "user://mkfolders/templates/"
 	dialog = AcceptDialog.new()
 	dialog.canceled.connect(func()->void:dialog.title = TITLE_BASE)
 	dialog.title = TITLE_BASE
@@ -24,9 +30,28 @@ func _enter_tree() -> void:
 	text_edit.placeholder_text = "Enter folder names"
 	text_edit.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	text_edit.gui_input.connect(_on_textedit_input)
-	
-	dialog.add_child(text_edit)
 
+	#select dialog
+	file_dialog = FileDialog.new()
+	dialog.add_child(text_edit)
+	dialog.add_child(file_dialog)
+
+	file_dialog.filters = PackedStringArray(["*.txt"])
+	file_dialog.file_selected.connect(func(selected_path: String)->void:
+		match file_dialog.file_mode:
+			FileDialog.FILE_MODE_OPEN_FILE:
+				var f = FileAccess.open(selected_path, FileAccess.READ)
+				text_edit.text = f.get_as_text()
+				f.close()
+			FileDialog.FILE_MODE_SAVE_FILE:
+				var f = FileAccess.open(selected_path, FileAccess.WRITE)
+				f.store_string(text_edit.text)
+	)
+
+	dialog.add_button("Templates", false, "select_template")
+	dialog.add_button("Save as Template", false, "save_template")
+	dialog.custom_action.connect(_file_dialog)
+	
 	dialog.confirmed.connect(_on_confirmed)
 	get_editor_interface().get_base_control().add_child(dialog)
 
@@ -47,6 +72,21 @@ func _enter_tree() -> void:
 
 	add_tool_menu_item("MkFolders", _open_dialog,)
 	key_event.command_or_control_autoremap = true
+
+func _file_dialog(action_name: String) -> void:
+	if action_name == "select_template":
+		file_dialog.access = FileDialog.ACCESS_USERDATA
+		file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+		file_dialog.current_path = base_path
+		file_dialog.current_dir = base_path
+		file_dialog.popup()
+	elif action_name == "save_template":
+		file_dialog.access = FileDialog.ACCESS_USERDATA
+		file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
+		file_dialog.current_path = base_path
+		file_dialog.current_dir = base_path
+		file_dialog.popup()
+		pass
 
 func _exit_tree() -> void:
 	remove_tool_menu_item("MkFolders")
@@ -94,7 +134,7 @@ func _on_confirmed() -> void:
 	
 		for line in text_edit.text.split("\n"):
 			var path = line.strip_edges()
-			if path == "":
+			if path == "" or path.begins_with("#"):
 				continue
 		
 			created_paths.append(_path.path_join(path))
