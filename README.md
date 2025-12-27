@@ -1,4 +1,5 @@
-# MkFolder
+# MkFolders
+<img src="addons/MkFolders/icon.svg" alt="MkFolders Icon" width="64" height="64">
 **MkFolder** is a tool to create multiple folders at once. Save and load folder names template to quickly create your working space.
 
 ## Features
