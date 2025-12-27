@@ -1,6 +1,8 @@
 # <img src="addons/MkFolders/icon.svg" alt="MkFolders Icon" width="64" height="64"> MkFolders
 **MkFolders** is a tool to create multiple folders at once. Save and load folder names template to quickly create your working space.
 
+<img src="screenshots/mkfolders.gif" alt="MkFolders Gif">
+
 ## Features
 - Open MkFolder with a shortcut, **CTRL+SHIFT+M** or in the **Tools** section in the editor
 - Select multiple folders (player, enemy, etc.) and create your folders for each (textures, scripts, sound, etc.)
