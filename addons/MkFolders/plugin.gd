@@ -44,6 +44,7 @@ func _enter_tree() -> void:
 	text_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text_edit.gui_input.connect(_on_textedit_input)
 	text_edit.text_changed.connect(_update_preview)
+	text_edit.text_set.connect(_update_preview)
 	h_split.add_child(text_edit)
 
 	# - PREVIEW TREE -
